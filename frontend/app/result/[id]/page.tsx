@@ -3,6 +3,8 @@ import { Logo } from "@/components/Logo";
 import { bandForScore, type RiskBand } from "@/lib/riskPrediction";
 import { categoryName, type BmiCategory } from "@/lib/bmi";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Heart score — VitaPulse",
   description: "A VitaPulse heart score and the details used to calculate it. Not a diagnosis.",
@@ -39,8 +41,10 @@ const LABELS = {
 
 async function loadResult(id: string): Promise<SharedResult | null> {
   if (!/^[A-Za-z0-9_-]{16,64}$/.test(id)) return null;
+  const base = process.env.BACKEND_URL;
+  if (!base) return null;
   try {
-    const response = await fetch(`http://127.0.0.1:8000/results/${id}`, { cache: "no-store" });
+    const response = await fetch(new URL(`results/${id}`, base), { cache: "no-store" });
     if (!response.ok) return null;
     const body = (await response.json()) as SharedResult;
     if (typeof body.score !== "number" || body.score < 0 || body.score > 1 || !body.inputs) return null;
